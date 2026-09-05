@@ -33,7 +33,7 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  role: 'admin';
+  role: 'user' | 'admin';
 }
 
 export interface ApiCustomError extends Error {
@@ -96,6 +96,14 @@ export async function fetchPublicBlogPostBySlug(slug: string): Promise<BlogPost 
 }
 
 // AUTH APIS
+export async function registerApi(name: string, email: string, password: string): Promise<User> {
+  const json = await apiRequest<{ user: User }>('/auth/register', {
+    method: 'POST',
+    body: JSON.stringify({ name, email, password }),
+  });
+  return json.user!;
+}
+
 export async function loginApi(email: string, password: string): Promise<User> {
   const json = await apiRequest<{ user: User }>('/auth/login', {
     method: 'POST',

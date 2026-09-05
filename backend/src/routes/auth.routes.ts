@@ -1,11 +1,14 @@
 import { Router } from 'express';
-import { login, logout, getMe } from '../controllers/auth.controller';
+import { login, logout, getMe, register } from '../controllers/auth.controller';
 import { validate } from '../middleware/validate';
-import { loginSchema } from '../schemas/auth.schema';
+import { loginSchema, registerSchema } from '../schemas/auth.schema';
 import { requireAuth } from '../middleware/auth';
-import { loginLimiter } from '../middleware/rateLimiter';
+import { loginLimiter, registerLimiter } from '../middleware/rateLimiter';
 
 const router = Router();
+
+// POST /api/auth/register
+router.post('/register', registerLimiter, validate(registerSchema), register);
 
 // POST /api/auth/login
 router.post('/login', loginLimiter, validate(loginSchema), login);

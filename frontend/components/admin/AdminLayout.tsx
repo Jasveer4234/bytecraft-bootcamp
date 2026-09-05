@@ -29,8 +29,12 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   useEffect(() => {
-    if (!loading && !user) {
-      router.push('/admin/login');
+    if (!loading) {
+      if (!user) {
+        router.push('/admin/login');
+      } else if (user.role !== 'admin') {
+        router.push('/dashboard');
+      }
     }
   }, [user, loading, router]);
 
@@ -47,7 +51,7 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
     );
   }
 
-  if (!user) {
+  if (!user || user.role !== 'admin') {
     return null; // Will redirect via useEffect
   }
 

@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { User } from '../models/User';
-import { comparePassword } from '../utils/password';
+import { comparePassword, hashPassword } from '../utils/password';
 import { generateToken } from '../utils/jwt';
 import { ApiError } from '../utils/ApiError';
 import { AuthenticatedRequest } from '../types';
@@ -16,6 +16,50 @@ const getCookieOptions = () => {
     sameSite: (isProduction ? 'none' : 'lax') as 'none' | 'lax',
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds
   };
+};
+
+export const register = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { name, email, password } = req.body;
+
+    const normalizedEmail = email.toLowerCase().trim();
+    const existingUser = await User.findOne({ email: normalizedEmail });
+
+    if (existingUser) {
+      return next(ApiError.conflict('An account with this email address already exists.'));
+    }
+
+    const passwordHash = await hashPassword(password);
+
+    // Explicitly enforce role 'user' — never allow client to create admin
+    const user = await User.create({
+      name: name.trim(),
+      email: normalizedEmail,
+      passwordHash,
+      role: 'user',
+    });
+
+    const token = generateToken({
+      userId: user._id.toString(),
+      email: user.email,
+      role: user.role,
+    });
+
+    res.cookie(COOKIE_NAME, token, getCookieOptions());
+
+    res.status(201).json({
+      success: true,
+      message: 'User registered successfully.',
+      user: {
+        id: user._id.toString(),
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
 };
 
 export const login = async (req: Request, res: Response, next: NextFunction) => {

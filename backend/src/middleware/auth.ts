@@ -19,7 +19,7 @@ export const requireAuth = (req: AuthenticatedRequest, _res: Response, next: Nex
   }
 };
 
-export const requireRole = (role: 'admin') => {
+export const requireRole = (role: 'admin' | 'user') => {
   return (req: AuthenticatedRequest, _res: Response, next: NextFunction) => {
     if (!req.user) {
       return next(ApiError.unauthorized('Authentication required.'));

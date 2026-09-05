@@ -5,9 +5,9 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { loginApi, ApiCustomError } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
-import { Code2, Lock, Mail, Eye, EyeOff, AlertCircle, ArrowLeft } from 'lucide-react';
+import { Code2, Lock, Mail, Eye, EyeOff, AlertCircle, ArrowLeft, Shield, LogIn } from 'lucide-react';
 
-export default function AdminLoginPage() {
+export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -30,17 +30,13 @@ export default function AdminLoginPage() {
     setSubmitting(true);
     try {
       const user = await loginApi(trimmedEmail, password);
-      
-      if (user.role !== 'admin') {
-        // Log out immediately so normal user session doesn't linger on admin login
-        await checkAuth();
-        setError('Administrator access required. Please sign in through the student login page.');
-        return;
-      }
-
-      // Re-verify auth context state for admin
       await checkAuth();
-      router.push('/admin/dashboard');
+
+      if (user.role === 'admin') {
+        router.push('/admin/dashboard');
+      } else {
+        router.push('/dashboard');
+      }
     } catch (err: unknown) {
       const apiErr = err as ApiCustomError;
       setError(apiErr.message || 'Invalid email or password.');
@@ -52,7 +48,7 @@ export default function AdminLoginPage() {
   return (
     <div className="min-h-screen bg-[#0b0f19] flex flex-col justify-center items-center px-4 py-12 selection:bg-cyan-500 selection:text-black relative">
       {/* Background Radial Glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[300px] bg-gradient-to-r from-cyan-500/10 to-blue-600/10 blur-[100px] pointer-events-none rounded-full" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[320px] bg-gradient-to-r from-cyan-500/10 via-blue-600/10 to-indigo-600/10 blur-[110px] pointer-events-none rounded-full" />
 
       <div className="w-full max-w-md space-y-8 relative z-10">
         {/* Back Link */}
@@ -61,20 +57,20 @@ export default function AdminLoginPage() {
             href="/"
             className="inline-flex items-center gap-2 text-xs font-semibold text-gray-400 hover:text-cyan-400 transition-colors"
           >
-            <ArrowLeft className="w-3.5 h-3.5" /> Back to Public Website
+            <ArrowLeft className="w-3.5 h-3.5" /> Back to Home
           </Link>
         </div>
 
         {/* Header Branding */}
         <div className="text-center space-y-3">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center text-white font-bold text-2xl shadow-xl shadow-cyan-500/20 mx-auto">
+          <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-cyan-500 via-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold text-2xl shadow-xl shadow-cyan-500/20 mx-auto">
             <Code2 className="w-7 h-7" />
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-            ByteCraft Admin Portal
+            Sign In to ByteCraft
           </h1>
-          <p className="text-xs sm:text-sm text-gray-400 font-mono">
-            Sign in with authorized administrator credentials
+          <p className="text-xs sm:text-sm text-gray-400">
+            Access your bootcamp student account and resources
           </p>
         </div>
 
@@ -101,7 +97,7 @@ export default function AdminLoginPage() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@bytecraft.dev"
+                  placeholder="student@example.com"
                   required
                   className="w-full pl-10 pr-4 py-3 rounded-xl bg-gray-950 border border-gray-800 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all font-mono"
                 />
@@ -140,28 +136,39 @@ export default function AdminLoginPage() {
             <button
               type="submit"
               disabled={submitting}
-              className="w-full py-3.5 rounded-xl font-bold text-white bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 shadow-lg shadow-cyan-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform active:scale-[0.99] text-sm flex items-center justify-center gap-2"
+              className="w-full py-3.5 rounded-xl font-bold text-white bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 hover:from-cyan-400 hover:to-blue-500 shadow-lg shadow-cyan-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform active:scale-[0.99] text-sm flex items-center justify-center gap-2"
             >
               {submitting ? (
                 <>
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  <span>Authenticating...</span>
+                  <span>Signing In...</span>
                 </>
               ) : (
-                <span>Sign In to Admin Portal</span>
+                <>
+                  <LogIn className="w-4 h-4" />
+                  <span>Sign In</span>
+                </>
               )}
             </button>
           </form>
 
-          <div className="pt-2 border-t border-gray-800 text-center space-y-2">
-            <p className="text-xs text-gray-400">
-              Not an administrator?{' '}
-              <Link href="/login" className="font-semibold text-cyan-400 hover:text-cyan-300 underline underline-offset-4">
-                Student Sign In
+          {/* Additional Links & Admin Portal Link */}
+          <div className="pt-2 border-t border-gray-800 text-center space-y-3 text-xs text-gray-400">
+            <p>
+              Don&apos;t have an account?{' '}
+              <Link href="/register" className="font-semibold text-cyan-400 hover:text-cyan-300 underline underline-offset-4">
+                Create Account
               </Link>
             </p>
-            <div className="text-[11px] text-gray-500">
-              <span>Protected by JWT HTTP-Only Secure Cookies & Zod Validation</span>
+
+            <div className="pt-1">
+              <Link
+                href="/admin/login"
+                className="inline-flex items-center gap-1.5 text-[11px] text-gray-500 hover:text-cyan-400 transition-colors"
+              >
+                <Shield className="w-3.5 h-3.5" />
+                <span>Admin Portal Login</span>
+              </Link>
             </div>
           </div>
         </div>
