@@ -12,12 +12,32 @@ const app = express();
 // Configure trust proxy for reverse proxy environments (Render/Railway/Fly)
 app.set('trust proxy', 1);
 
+// Helper to validate allowed origins
+const isOriginAllowed = (origin?: string): boolean => {
+  if (!origin) return true; // Allow non-browser, server-to-server, or same-origin requests
+  if (env.ALLOWED_ORIGINS.includes(origin)) return true;
+
+  // Allow strictly scoped Vercel preview/branch URLs for this project under the Jasveer4234 account
+  const isVercelPreview = /^https:\/\/bytecraft-bootcamp(-[a-zA-Z0-9]+)*-(jasveer4234s-projects|jasveer4234)\.vercel\.app$/i.test(origin);
+  if (isVercelPreview) return true;
+
+  return false;
+};
+
 // Security & Parsing Middlewares
 app.use(helmet());
 app.use(
   cors({
-    origin: env.CORS_ORIGIN,
+    origin: (origin, callback) => {
+      if (isOriginAllowed(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error(`CORS policy error: Origin ${origin} not allowed`));
+      }
+    },
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Cookie', 'X-Requested-With'],
   })
 );
 app.use(cookieParser());

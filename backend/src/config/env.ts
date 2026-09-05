@@ -19,12 +19,26 @@ if (isProduction) {
   }
 }
 
+const defaultAllowedOrigins = [
+  'https://bytecraft-bootcamp.vercel.app',
+  'http://localhost:3000',
+  'http://127.0.0.1:3000',
+];
+
+const customOrigins = (process.env.CORS_ORIGIN || '')
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
+export const allowedOrigins = Array.from(new Set([...defaultAllowedOrigins, ...customOrigins]));
+
 export const env = {
   PORT: parseInt(process.env.PORT || '5000', 10),
   MONGODB_URI: process.env.MONGODB_URI || '',
   JWT_SECRET: process.env.JWT_SECRET || (isProduction ? '' : 'default_dev_secret_key_12345'),
   JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || '7d',
   CORS_ORIGIN: process.env.CORS_ORIGIN || 'http://localhost:3000',
+  ALLOWED_ORIGINS: allowedOrigins,
   NODE_ENV: process.env.NODE_ENV || 'development',
   ADMIN_EMAIL: process.env.ADMIN_EMAIL || (isProduction ? '' : 'admin@bytecraft.dev'),
   ADMIN_PASSWORD: process.env.ADMIN_PASSWORD || (isProduction ? '' : 'AdminPass123!'),
