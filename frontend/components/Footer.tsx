@@ -17,13 +17,12 @@ export default function Footer() {
           </p>
 
           <div className="pt-2">
-            <button
-              disabled
-              className="px-8 py-3.5 rounded-xl text-base font-bold text-gray-300 bg-gray-900 border border-cyan-500/40 cursor-not-allowed opacity-90 shadow-lg inline-flex items-center gap-2"
+            <Link
+              href="/register"
+              className="px-8 py-3.5 rounded-xl text-base font-bold text-white bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 shadow-xl shadow-cyan-500/20 inline-flex items-center gap-2 transform active:scale-95 transition-all"
             >
-              <span>Registration Opens Soon</span>
-              <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping" />
-            </button>
+              <span>Register for Bootcamp</span>
+            </Link>
           </div>
         </div>
 
